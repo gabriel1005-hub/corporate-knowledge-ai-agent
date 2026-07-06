@@ -1,0 +1,17 @@
+streamlit
+langchain
+langchain-community
+langchain-openai
+langchain-text-splitters
+
+chromadb
+
+pypdf
+
+pandas
+
+python-dotenv
+
+openpyxl
+
+python-docx
