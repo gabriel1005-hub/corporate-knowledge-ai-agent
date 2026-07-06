@@ -1,6 +1,8 @@
 # Virtual Environment
 .venv/
 venv/
+env/
+ENV/
 
 # Python
 __pycache__/
@@ -24,10 +26,8 @@ dist/
 # Jupyter
 .ipynb_checkpoints/
 
-# macOS
+# OS
 .DS_Store
-
-# Windows
 Thumbs.db
 
 # ChromaDB
@@ -35,3 +35,16 @@ data/vector_db/
 
 # Logs
 *.log
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Type checkers
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.pytype/
+
+# Coverage
+.coverage
+htmlcov/
