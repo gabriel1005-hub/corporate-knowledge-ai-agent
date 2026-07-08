@@ -2,6 +2,7 @@
 Document management service.
 """
 
+from datetime import datetime
 from pathlib import Path
 
 from app.config.settings import settings
@@ -43,13 +44,20 @@ class DocumentService:
                         stat.st_size / (1024 * 1024),
                         2,
                     ),
-                    "modified": stat.st_mtime,
+                    "uploaded": datetime.fromtimestamp(
+                        stat.st_mtime
+                    ).strftime("%d %b %Y"),
+                    "status": "Indexed",
+                    "type": "PDF",
                 }
             )
 
         return documents
 
-    def exists(self, filename: str):
+    def exists(
+        self,
+        filename: str,
+    ):
 
         return (
             self.documents_path / filename
@@ -79,8 +87,7 @@ class DocumentService:
     ):
 
         path = (
-            self.documents_path
-            / filename
+            self.documents_path / filename
         )
 
         if path.exists():
@@ -90,3 +97,16 @@ class DocumentService:
             return True
 
         return False
+
+    def get_document(
+        self,
+        filename: str,
+    ):
+
+        for document in self.list_documents():
+
+            if document["name"] == filename:
+
+                return document
+
+        return None

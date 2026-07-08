@@ -82,7 +82,7 @@ def render_sidebar(stats, indexing_service):
 
                     st.balloons()
 
-                    time.sleep(2)
+                    time.sleep(1)
 
                     st.rerun()
 
@@ -101,7 +101,7 @@ def render_sidebar(stats, indexing_service):
         st.success("Knowledge Base Loaded")
 
         # -------------------------------------------------
-        # METRICS
+        # KNOWLEDGE BASE METRICS
         # -------------------------------------------------
 
         st.divider()
@@ -125,7 +125,7 @@ def render_sidebar(stats, indexing_service):
             )
 
         st.caption(
-            f"Last refresh: {datetime.now():%H:%M:%S}"
+            f"Updated: {datetime.now():%H:%M:%S}"
         )
 
         # -------------------------------------------------
@@ -149,7 +149,7 @@ def render_sidebar(stats, indexing_service):
         )
 
         # -------------------------------------------------
-        # DOCUMENTS
+        # DOCUMENT MANAGER
         # -------------------------------------------------
 
         st.divider()
@@ -162,27 +162,60 @@ def render_sidebar(stats, indexing_service):
             f"{len(documents)} indexed documents"
         )
 
-        if documents:
+        if not documents:
+
+            st.info(
+                "No documents found."
+            )
+
+        else:
 
             for document in documents:
 
-                with st.container(border=True):
+                col1, col2 = st.columns([5, 1])
 
-                    st.write(
-                        f"📄 {document['name']}"
+                with col1:
+
+                    st.markdown(
+                        f"**📄 {document['name']}**"
                     )
 
                     st.caption(
                         f"{document['size_mb']} MB"
                     )
 
-        else:
+                with col2:
 
-            st.info(
-                "No documents indexed."
-            )
+                    if st.button(
+                        "🗑",
+                        key=f"delete_{document['name']}",
+                        help="Delete document",
+                    ):
 
-        st.divider()
+                        deleted = document_service.delete_document(
+                            document["name"]
+                        )
+
+                        if deleted:
+
+                            st.toast(
+                                "Document deleted.",
+                                icon="🗑"
+                            )
+
+                            time.sleep(0.5)
+
+                            st.rerun()
+
+                        else:
+
+                            st.error(
+                                "Unable to delete document."
+                            )
+
+                st.divider()
+
+        # -------------------------------------------------
 
         st.caption(
             "Powered by Ollama + ChromaDB"
@@ -192,7 +225,6 @@ def render_sidebar(stats, indexing_service):
 def render_sources(sources):
 
     if not sources:
-
         return
 
     st.markdown("### 📚 Sources")
@@ -201,7 +233,9 @@ def render_sources(sources):
 
         with st.container(border=True):
 
-            st.write(f"📄 {source}")
+            st.write(
+                f"📄 {source}"
+            )
 
 
 def render_footer():
