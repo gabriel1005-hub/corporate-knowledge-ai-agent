@@ -157,6 +157,20 @@ This application runs completely locally.
 
 No corporate documentation is sent to third-party LLM providers.
 
+---
+
+# 🐳 Docker Status
+
+Docker support has been prepared for this project.
+
+The application builds successfully inside a Docker container.
+
+At the moment, a compatibility issue between the current ChromaDB release and the Linux container environment prevents the vector database from initializing correctly.
+
+Native execution is fully supported and recommended.
+
+Future versions will include a fully validated Docker deployment.
+
 🚀 Future Improvements
 Docker deployment
 Oracle Cloud deployment

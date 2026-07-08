@@ -10,34 +10,35 @@ from app.vectorstore.chroma_store import ChromaStore
 
 class SystemService:
     """
-    Provides system metrics for the Streamlit UI.
+    Provides runtime statistics for the application.
     """
 
     def __init__(self):
 
-        self.store = ChromaStore()
+        self.documents_path = Path(
+            settings.DOCUMENTS_PATH
+        )
 
-    def get_stats(self) -> dict:
+    def get_stats(self):
 
         stats = {
             "documents": 0,
             "chunks": 0,
             "embedding_model": settings.EMBEDDING_MODEL,
             "llm_model": settings.LLM_MODEL,
-            "status": "Ready",
         }
 
         # -------------------------
         # Documents
         # -------------------------
 
-        data_path = Path(settings.DOCUMENTS_PATH)
+        if self.documents_path.exists():
 
-        if data_path.exists():
-
-            stats["documents"] = len(
-                list(data_path.glob("*.pdf"))
+            pdfs = list(
+                self.documents_path.glob("*.pdf")
             )
+
+            stats["documents"] = len(pdfs)
 
         # -------------------------
         # Chunks
@@ -45,7 +46,9 @@ class SystemService:
 
         try:
 
-            collection = self.store.vectorstore._collection
+            store = ChromaStore()
+
+            collection = store.vectorstore._collection
 
             stats["chunks"] = collection.count()
 

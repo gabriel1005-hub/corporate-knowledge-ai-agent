@@ -2,7 +2,15 @@
 Reusable Streamlit UI components.
 """
 
+import time
+from datetime import datetime
+
 import streamlit as st
+
+from app.services.document_service import DocumentService
+
+
+document_service = DocumentService()
 
 
 def render_header():
@@ -14,7 +22,7 @@ def render_header():
     )
 
 
-def render_sidebar(stats):
+def render_sidebar(stats, indexing_service):
 
     with st.sidebar:
 
@@ -24,19 +32,81 @@ def render_sidebar(stats):
             "Enterprise Knowledge Assistant"
         )
 
-        st.divider()
-
-        st.subheader("System Status")
-
-        st.success("🟢 Ollama Connected")
-
-        st.success("🟢 ChromaDB Ready")
-
-        st.success("🟢 Knowledge Base Loaded")
+        # -------------------------------------------------
+        # DOCUMENT UPLOAD
+        # -------------------------------------------------
 
         st.divider()
 
-        st.subheader("Knowledge Base")
+        st.subheader("📂 Knowledge Base")
+
+        uploaded_file = st.file_uploader(
+            "Upload a PDF",
+            type=["pdf"],
+        )
+
+        if uploaded_file is not None:
+
+            if st.button(
+                "📥 Upload & Index",
+                use_container_width=True,
+            ):
+
+                if document_service.exists(uploaded_file.name):
+
+                    st.warning(
+                        "This document already exists."
+                    )
+
+                else:
+
+                    save_path = document_service.save_document(
+                        uploaded_file
+                    )
+
+                    with st.spinner(
+                        "Indexing document..."
+                    ):
+
+                        chunks = indexing_service.index_document(
+                            str(save_path)
+                        )
+
+                    st.success(
+                        f"✅ {uploaded_file.name} indexed successfully!"
+                    )
+
+                    st.info(
+                        f"Generated {chunks} chunks."
+                    )
+
+                    st.balloons()
+
+                    time.sleep(2)
+
+                    st.rerun()
+
+        # -------------------------------------------------
+        # SYSTEM STATUS
+        # -------------------------------------------------
+
+        st.divider()
+
+        st.subheader("🟢 System Status")
+
+        st.success("Ollama Connected")
+
+        st.success("ChromaDB Ready")
+
+        st.success("Knowledge Base Loaded")
+
+        # -------------------------------------------------
+        # METRICS
+        # -------------------------------------------------
+
+        st.divider()
+
+        st.subheader("📊 Knowledge Base")
 
         col1, col2 = st.columns(2)
 
@@ -54,9 +124,17 @@ def render_sidebar(stats):
                 stats["chunks"],
             )
 
+        st.caption(
+            f"Last refresh: {datetime.now():%H:%M:%S}"
+        )
+
+        # -------------------------------------------------
+        # MODELS
+        # -------------------------------------------------
+
         st.divider()
 
-        st.subheader("Models")
+        st.subheader("🧠 Models")
 
         st.write("Embedding")
 
@@ -69,6 +147,40 @@ def render_sidebar(stats):
         st.code(
             stats["llm_model"]
         )
+
+        # -------------------------------------------------
+        # DOCUMENTS
+        # -------------------------------------------------
+
+        st.divider()
+
+        st.subheader("📄 Indexed Documents")
+
+        documents = document_service.list_documents()
+
+        st.caption(
+            f"{len(documents)} indexed documents"
+        )
+
+        if documents:
+
+            for document in documents:
+
+                with st.container(border=True):
+
+                    st.write(
+                        f"📄 {document['name']}"
+                    )
+
+                    st.caption(
+                        f"{document['size_mb']} MB"
+                    )
+
+        else:
+
+            st.info(
+                "No documents indexed."
+            )
 
         st.divider()
 

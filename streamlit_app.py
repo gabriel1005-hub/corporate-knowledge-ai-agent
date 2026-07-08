@@ -11,6 +11,7 @@ import streamlit as st
 
 from app.services.query_service import QueryService
 from app.services.system_service import SystemService
+from app.services.indexing_service import IndexingService
 
 from app.ui.components import (
     render_header,
@@ -22,6 +23,10 @@ from app.ui.components import (
 from app.ui.styles import load_css
 
 
+# --------------------------------------------------
+# PAGE CONFIG
+# --------------------------------------------------
+
 st.set_page_config(
     page_title="NovaCore Knowledge AI",
     page_icon="🧠",
@@ -30,6 +35,10 @@ st.set_page_config(
 
 load_css()
 
+
+# --------------------------------------------------
+# SERVICES
+# --------------------------------------------------
 
 @st.cache_resource
 def get_query_service():
@@ -41,11 +50,21 @@ def get_system_service():
     return SystemService()
 
 
+@st.cache_resource
+def get_indexing_service():
+    return IndexingService()
+
+
 query_service = get_query_service()
 system_service = get_system_service()
+indexing_service = get_indexing_service()
 
 stats = system_service.get_stats()
 
+
+# --------------------------------------------------
+# SESSION
+# --------------------------------------------------
 
 if "messages" not in st.session_state:
 
@@ -62,10 +81,21 @@ if "messages" not in st.session_state:
     ]
 
 
-render_sidebar(stats)
+# --------------------------------------------------
+# LAYOUT
+# --------------------------------------------------
+
+render_sidebar(
+    stats=stats,
+    indexing_service=indexing_service,
+)
 
 render_header()
 
+
+# --------------------------------------------------
+# CHAT HISTORY
+# --------------------------------------------------
 
 for message in st.session_state.messages:
 
@@ -73,10 +103,12 @@ for message in st.session_state.messages:
 
         st.markdown(message["answer"])
 
-        render_sources(
-            message["sources"]
-        )
+        render_sources(message["sources"])
 
+
+# --------------------------------------------------
+# CHAT INPUT
+# --------------------------------------------------
 
 prompt = st.chat_input(
     "Ask something about your company..."
@@ -100,23 +132,15 @@ if prompt:
 
         start = time.perf_counter()
 
-        with st.spinner(
-            "Searching corporate knowledge..."
-        ):
+        with st.spinner("Searching corporate knowledge..."):
 
-            response = query_service.ask(
-                prompt
-            )
+            response = query_service.ask(prompt)
 
         elapsed = time.perf_counter() - start
 
-        st.markdown(
-            response["answer"]
-        )
+        st.markdown(response["answer"])
 
-        render_sources(
-            response["sources"]
-        )
+        render_sources(response["sources"])
 
         st.caption(
             f"⏱ Response time: {elapsed:.2f} seconds"
@@ -130,5 +154,9 @@ if prompt:
         }
     )
 
+
+# --------------------------------------------------
+# FOOTER
+# --------------------------------------------------
 
 render_footer()
