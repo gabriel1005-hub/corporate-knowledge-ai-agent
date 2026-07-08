@@ -1,17 +1,15 @@
-streamlit
+pypdf
+
 langchain
 langchain-community
-langchain-openai
 langchain-text-splitters
+langchain-chroma
+langchain-ollama
 
 chromadb
 
-pypdf
+streamlit
 
 pandas
 
 python-dotenv
-
-openpyxl
-
-python-docx
