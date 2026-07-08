@@ -12,10 +12,15 @@ import streamlit as st
 from app.services.query_service import QueryService
 from app.services.system_service import SystemService
 
+from app.ui.components import (
+    render_header,
+    render_sidebar,
+    render_sources,
+    render_footer,
+)
 
-# -------------------------------------------------------
-# PAGE CONFIG
-# -------------------------------------------------------
+from app.ui.styles import load_css
+
 
 st.set_page_config(
     page_title="NovaCore Knowledge AI",
@@ -23,9 +28,8 @@ st.set_page_config(
     layout="wide",
 )
 
-# -------------------------------------------------------
-# SERVICES
-# -------------------------------------------------------
+load_css()
+
 
 @st.cache_resource
 def get_query_service():
@@ -42,11 +46,9 @@ system_service = get_system_service()
 
 stats = system_service.get_stats()
 
-# -------------------------------------------------------
-# SESSION
-# -------------------------------------------------------
 
 if "messages" not in st.session_state:
+
     st.session_state.messages = [
         {
             "role": "assistant",
@@ -59,65 +61,11 @@ if "messages" not in st.session_state:
         }
     ]
 
-# -------------------------------------------------------
-# SIDEBAR
-# -------------------------------------------------------
 
-with st.sidebar:
+render_sidebar(stats)
 
-    st.title("🧠 NovaCore")
+render_header()
 
-    st.caption("Enterprise Knowledge Assistant")
-
-    st.divider()
-
-    st.subheader("System Status")
-
-    st.success("🟢 Ollama Connected")
-    st.success("🟢 ChromaDB Ready")
-    st.success("🟢 Knowledge Base Loaded")
-
-    st.divider()
-
-    st.subheader("Knowledge Base")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.metric("Documents", stats["documents"])
-
-    with col2:
-        st.metric("Chunks", stats["chunks"])
-
-    st.divider()
-
-    st.subheader("Models")
-
-    st.write("Embedding")
-
-    st.code(stats["embedding_model"])
-
-    st.write("LLM")
-
-    st.code(stats["llm_model"])
-
-    st.divider()
-
-    st.caption("Powered by Ollama + ChromaDB")
-
-# -------------------------------------------------------
-# HEADER
-# -------------------------------------------------------
-
-st.title("🧠 NovaCore Knowledge AI")
-
-st.caption(
-    "Enterprise Knowledge Assistant powered by Local AI"
-)
-
-# -------------------------------------------------------
-# CHAT HISTORY
-# -------------------------------------------------------
 
 for message in st.session_state.messages:
 
@@ -125,19 +73,10 @@ for message in st.session_state.messages:
 
         st.markdown(message["answer"])
 
-        if message["sources"]:
+        render_sources(
+            message["sources"]
+        )
 
-            st.markdown("#### 📚 Sources")
-
-            for source in message["sources"]:
-
-                with st.container(border=True):
-
-                    st.write(f"📄 {source}")
-
-# -------------------------------------------------------
-# CHAT INPUT
-# -------------------------------------------------------
 
 prompt = st.chat_input(
     "Ask something about your company..."
@@ -161,25 +100,27 @@ if prompt:
 
         start = time.perf_counter()
 
-        with st.spinner("Searching corporate knowledge..."):
+        with st.spinner(
+            "Searching corporate knowledge..."
+        ):
 
-            response = query_service.ask(prompt)
+            response = query_service.ask(
+                prompt
+            )
 
         elapsed = time.perf_counter() - start
 
-        st.markdown(response["answer"])
+        st.markdown(
+            response["answer"]
+        )
 
-        if response["sources"]:
+        render_sources(
+            response["sources"]
+        )
 
-            st.markdown("#### 📚 Sources")
-
-            for source in response["sources"]:
-
-                with st.container(border=True):
-
-                    st.write(f"📄 {source}")
-
-        st.caption(f"⏱ Response time: {elapsed:.2f} seconds")
+        st.caption(
+            f"⏱ Response time: {elapsed:.2f} seconds"
+        )
 
     st.session_state.messages.append(
         {
@@ -188,3 +129,6 @@ if prompt:
             "sources": response["sources"],
         }
     )
+
+
+render_footer()

@@ -1,0 +1,13 @@
+"""
+NovaCore theme configuration.
+"""
+
+PRIMARY_COLOR = "#7C3AED"
+
+SECONDARY_COLOR = "#A855F7"
+
+SUCCESS_COLOR = "#16A34A"
+
+BACKGROUND = "#0E1117"
+
+CARD = "#1F2430"
