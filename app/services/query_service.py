@@ -10,7 +10,7 @@ from app.vectorstore.chroma_store import ChromaStore
 
 class QueryService:
     """
-    Handles question answering using Chroma + Ollama.
+    Enterprise RAG query service.
     """
 
     def __init__(self):
@@ -22,7 +22,10 @@ class QueryService:
             temperature=0,
         )
 
-    def ask(self, question: str) -> str:
+    def ask(self, question: str) -> dict:
+        """
+        Returns a structured response.
+        """
 
         documents = self.vectorstore.similarity_search(
             question,
@@ -30,15 +33,23 @@ class QueryService:
         )
 
         if not documents:
-            return "No relevant information was found."
+
+            return {
+                "answer": "I could not find that information in the corporate documentation.",
+                "sources": [],
+            }
 
         context = "\n\n".join(
-            doc.page_content for doc in documents
+            doc.page_content
+            for doc in documents
         )
 
         sources = sorted(
             {
-                doc.metadata.get("source", "Unknown")
+                doc.metadata.get(
+                    "source",
+                    "Unknown Document",
+                )
                 for doc in documents
             }
         )
@@ -46,28 +57,30 @@ class QueryService:
         prompt = f"""
 You are NovaCore Knowledge AI.
 
+You are an enterprise knowledge assistant.
+
 Answer ONLY using the provided context.
 
-If the answer is not contained in the context, reply exactly:
+Never invent information.
+
+If the answer does not exist in the context say exactly:
 
 I could not find that information in the corporate documentation.
 
-Context:
-
+Context
+-------
 {context}
 
-Question:
-
+Question
+--------
 {question}
+
+Answer:
 """
 
         response = self.llm.invoke(prompt)
 
-        answer = response.content
-
-        answer += "\n\nSources:\n"
-
-        for source in sources:
-            answer += f"- {source}\n"
-
-        return answer
+        return {
+            "answer": response.content.strip(),
+            "sources": sources,
+        }
