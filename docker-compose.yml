@@ -1,17 +1,9 @@
-version: "3.9"
-
 services:
-
   novacore:
-
     build: .
-
     container_name: novacore-ai
-
     ports:
       - "8501:8501"
-
     volumes:
       - ./data:/app/data
-
     restart: unless-stopped
