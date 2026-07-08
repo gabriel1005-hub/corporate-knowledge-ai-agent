@@ -25,12 +25,20 @@ class ChromaStore:
             embedding_function=self.embeddings,
         )
 
+    # -------------------------------------------------
+    # ADD DOCUMENTS
+    # -------------------------------------------------
+
     def add_documents(
         self,
         documents: list[LangchainDocument],
     ):
 
         self.vectorstore.add_documents(documents)
+
+    # -------------------------------------------------
+    # SEARCH
+    # -------------------------------------------------
 
     def similarity_search(
         self,
@@ -42,3 +50,40 @@ class ChromaStore:
             query,
             k=k,
         )
+
+    # -------------------------------------------------
+    # DELETE DOCUMENT
+    # -------------------------------------------------
+
+    def delete_document(
+        self,
+        document_name: str,
+    ) -> bool:
+        """
+        Delete every embedding belonging to a document.
+        """
+
+        try:
+
+            self.vectorstore.delete(
+                where={
+                    "document_id": document_name
+                }
+            )
+
+            return True
+
+        except Exception as e:
+
+            print(e)
+
+            return False
+
+    # -------------------------------------------------
+    # COLLECTION INFO
+    # -------------------------------------------------
+
+    @property
+    def collection(self):
+
+        return self.vectorstore._collection

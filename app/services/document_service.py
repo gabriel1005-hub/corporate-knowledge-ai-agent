@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from app.config.settings import settings
+from app.vectorstore.chroma_store import ChromaStore
 
 
 class DocumentService:
@@ -18,6 +19,12 @@ class DocumentService:
         self.documents_path = Path(
             settings.DOCUMENTS_PATH
         )
+
+        self.vectorstore = ChromaStore()
+
+    # -------------------------------------------------
+    # LIST DOCUMENTS
+    # -------------------------------------------------
 
     def list_documents(self):
 
@@ -54,6 +61,10 @@ class DocumentService:
 
         return documents
 
+    # -------------------------------------------------
+    # EXISTS
+    # -------------------------------------------------
+
     def exists(
         self,
         filename: str,
@@ -62,6 +73,10 @@ class DocumentService:
         return (
             self.documents_path / filename
         ).exists()
+
+    # -------------------------------------------------
+    # SAVE
+    # -------------------------------------------------
 
     def save_document(
         self,
@@ -81,22 +96,51 @@ class DocumentService:
 
         return destination
 
+    # -------------------------------------------------
+    # DELETE
+    # -------------------------------------------------
+
     def delete_document(
         self,
         filename: str,
-    ):
+    ) -> bool:
+        """
+        Delete a document from both ChromaDB and disk.
+        """
 
-        path = (
-            self.documents_path / filename
-        )
+        try:
 
-        if path.exists():
+            print(
+                f"Deleting embeddings for: {filename}"
+            )
 
-            path.unlink()
+            self.vectorstore.delete_document(
+                filename
+            )
+
+            path = (
+                self.documents_path / filename
+            )
+
+            if path.exists():
+
+                path.unlink()
+
+                print(
+                    "PDF removed successfully."
+                )
 
             return True
 
-        return False
+        except Exception as e:
+
+            print(e)
+
+            return False
+
+    # -------------------------------------------------
+    # GET DOCUMENT
+    # -------------------------------------------------
 
     def get_document(
         self,

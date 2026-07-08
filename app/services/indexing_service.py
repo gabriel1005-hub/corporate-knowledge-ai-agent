@@ -42,6 +42,16 @@ class IndexingService:
         print("3️⃣ Splitting into chunks...")
         chunks = self.chunker.split(document)
 
+        # -------------------------------------------------
+        # Attach metadata to every chunk
+        # -------------------------------------------------
+
+        for index, chunk in enumerate(chunks):
+
+            chunk.metadata["source"] = pdf.name
+            chunk.metadata["document_id"] = pdf.name
+            chunk.metadata["chunk_id"] = index
+
         print(f"4️⃣ Generated {len(chunks)} chunks")
 
         print("5️⃣ Writing to ChromaDB...")
