@@ -1,15 +1,16 @@
 pypdf
 
+streamlit
+
+pandas
+
+chromadb
+
 langchain
+langchain-core
 langchain-community
 langchain-text-splitters
 langchain-chroma
 langchain-ollama
-
-chromadb
-
-streamlit
-
-pandas
 
 python-dotenv
