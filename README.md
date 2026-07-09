@@ -31,12 +31,6 @@ http://132.226.107.94:8501
 
 # 🎥 Demo
 
-> Replace this image with your GIF.
-
-![](assets/demo.gif)
-
----
-
 # 📸 Screenshots
 
 ## Home
@@ -47,7 +41,7 @@ http://132.226.107.94:8501
 
 ## Chat
 
-![](assets/chat.png)
+![](assets/answer.png)
 
 ---
 
@@ -348,7 +342,7 @@ Deployment includes:
 
 Example deployment:
 
-![](assets/oci-deployment.png)
+![](assets/home.png)
 
 ---
 
