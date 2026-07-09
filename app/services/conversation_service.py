@@ -1,88 +1,121 @@
 """
 Conversation service.
 
-Manages chat history independently from Streamlit.
+Manages conversations independently from the UI.
 """
 
+from dataclasses import dataclass, field
+from datetime import datetime
 from uuid import uuid4
+
+
+@dataclass(slots=True)
+class Message:
+    """
+    Chat message.
+    """
+
+    role: str
+    content: str
+    timestamp: datetime = field(
+        default_factory=datetime.now
+    )
 
 
 class ConversationService:
     """
-    Handles conversation state.
+    Conversation manager.
     """
 
     def __init__(self):
 
-        self._conversation = []
+        self.new_conversation()
 
-        self._id = str(uuid4())
+    # -------------------------------------------------
 
-    @property
-    def id(self):
+    def new_conversation(self):
 
-        return self._id
-
-    @property
-    def history(self):
-
-        return self._conversation
-
-    def add_user_message(
-        self,
-        message: str,
-    ):
-
-        self._conversation.append(
-            {
-                "role": "user",
-                "content": message,
-            }
+        self.id = str(
+            uuid4()
         )
 
-    def add_assistant_message(
+        self.messages = []
+
+    # -------------------------------------------------
+
+    def add_user(
         self,
-        message: str,
+        content: str,
     ):
 
-        self._conversation.append(
-            {
-                "role": "assistant",
-                "content": message,
-            }
+        self.messages.append(
+
+            Message(
+                role="user",
+                content=content,
+            )
+
         )
 
-    def clear(self):
+    # -------------------------------------------------
 
-        self._conversation = []
+    def add_assistant(
+        self,
+        content: str,
+    ):
 
-        self._id = str(uuid4())
+        self.messages.append(
+
+            Message(
+                role="assistant",
+                content=content,
+            )
+
+        )
+
+    # -------------------------------------------------
+
+    def history(
+        self,
+        limit: int = 8,
+    ):
+
+        return self.messages[-limit:]
+
+    # -------------------------------------------------
 
     def build_context(
         self,
-        max_messages: int = 6,
+        limit: int = 8,
     ) -> str:
         """
-        Returns the latest conversation
-        formatted for the LLM.
+        Build conversational context.
         """
 
-        messages = self._conversation[
-            -max_messages:
-        ]
+        history = self.history(
+            limit
+        )
 
-        context = []
+        lines = []
 
-        for message in messages:
+        for message in history:
 
-            role = message[
-                "role"
-            ].capitalize()
+            role = (
+                "User"
+                if message.role == "user"
+                else "Assistant"
+            )
 
-            context.append(
-                f"{role}: {message['content']}"
+            lines.append(
+                f"{role}: {message.content}"
             )
 
         return "\n".join(
-            context
+            lines
         )
+
+    # -------------------------------------------------
+
+    def clear(self):
+
+        self.new_conversation()
