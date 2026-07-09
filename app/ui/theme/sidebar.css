@@ -1,0 +1,53 @@
+/* ==========================================================
+   SIDEBAR
+========================================================== */
+
+section[data-testid="stSidebar"]{
+
+    background: var(--sidebar);
+
+    border-right:1px solid var(--border);
+
+}
+
+section[data-testid="stSidebar"] .block-container{
+
+    padding-top:2rem;
+
+    padding-left:1.2rem;
+
+    padding-right:1.2rem;
+
+}
+
+section[data-testid="stSidebar"] h1{
+
+    font-size:28px;
+
+}
+
+section[data-testid="stSidebar"] h2{
+
+    font-size:20px;
+
+}
+
+section[data-testid="stSidebar"] details{
+
+    background: var(--surface);
+
+    border-radius: var(--radius-md);
+
+    border:1px solid var(--border);
+
+    margin-bottom:16px;
+
+    overflow:hidden;
+
+}
+
+section[data-testid="stSidebar"] details:hover{
+
+    border-color: var(--border-hover);
+
+}

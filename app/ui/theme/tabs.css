@@ -1,0 +1,43 @@
+/* ==========================================================
+   TABS
+========================================================== */
+
+button[data-baseweb="tab"]{
+
+    height:54px;
+
+    padding:0 26px;
+
+    border-radius:14px;
+
+    background:transparent;
+
+    border:1px solid transparent;
+
+    color:var(--text-secondary);
+
+    transition:.25s;
+
+    font-weight:600;
+
+}
+
+button[data-baseweb="tab"]:hover{
+
+    background:var(--surface);
+
+    border-color:var(--border-hover);
+
+    color:white;
+
+}
+
+button[aria-selected="true"]{
+
+    background:var(--primary) !important;
+
+    color:white !important;
+
+    border-color:var(--primary);
+
+}
