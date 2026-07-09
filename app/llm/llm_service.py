@@ -16,6 +16,7 @@ class LLMService:
 
         self.llm = ChatOllama(
             model=settings.LLM_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
             temperature=0,
         )
 
@@ -24,8 +25,6 @@ class LLMService:
         prompt: str,
     ):
 
-        response = self.llm.invoke(
-            prompt
-        )
+        response = self.llm.invoke(prompt)
 
         return response.content.strip()

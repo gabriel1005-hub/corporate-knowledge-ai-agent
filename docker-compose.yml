@@ -2,8 +2,14 @@ services:
   novacore:
     build: .
     container_name: novacore-ai
+
     ports:
       - "8501:8501"
+
     volumes:
       - ./data:/app/data
+
+    environment:
+      OLLAMA_BASE_URL: "http://10.0.0.150:11434"
+
     restart: unless-stopped

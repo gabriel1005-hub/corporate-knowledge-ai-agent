@@ -1,41 +1,50 @@
 """
-Query service for NovaCore Knowledge AI.
+Enterprise Query Service.
+
+Coordinates the RAG pipeline.
 """
 
 import time
 
-from langchain_ollama import ChatOllama
-
-from app.config.settings import settings
-from app.vectorstore.chroma_store import ChromaStore
+from app.llm.llm_service import LLMService
+from app.rag.prompt_builder import PromptBuilder
+from app.rag.retrieval_config import RetrievalConfig
+from app.rag.retriever import Retriever
 
 
 class QueryService:
     """
-    Enterprise RAG query service.
+    Enterprise RAG Orchestrator.
     """
 
     def __init__(self):
 
-        self.vectorstore = ChromaStore()
+        self.retriever = Retriever()
 
-        self.llm = ChatOllama(
-            model=settings.LLM_MODEL,
-            temperature=0,
-        )
+        self.llm = LLMService()
+
+    # -------------------------------------------------
 
     def ask(
         self,
         question: str,
+        conversation_context: str = "",
     ) -> dict:
+        """
+        Execute the complete RAG pipeline.
+        """
+
+        config = RetrievalConfig()
+
+        # ---------------------------------------------
+        # Retrieval
+        # ---------------------------------------------
 
         retrieval_start = time.perf_counter()
 
-        documents = (
-            self.vectorstore.similarity_search(
-                question,
-                k=5,
-            )
+        documents = self.retriever.retrieve(
+            question=question,
+            config=config,
         )
 
         retrieval_time = (
@@ -43,64 +52,83 @@ class QueryService:
             - retrieval_start
         )
 
+        # ---------------------------------------------
+        # No results
+        # ---------------------------------------------
+
         if not documents:
 
             return {
 
                 "answer":
-                "I could not find that information in the corporate documentation.",
+                (
+                    "I could not find that "
+                    "information in the "
+                    "corporate documentation."
+                ),
 
-                "sources":[],
+                "sources": [],
 
-                "retrieved_chunks":[],
+                "retrieved_chunks": [],
 
-                "context":"",
+                "context": "",
 
-                "metrics":{
+                "metrics": {
 
-                    "documents":0,
+                    "documents": 0,
 
-                    "retrieval_time":retrieval_time,
+                    "retrieval_time":
+                    retrieval_time,
 
-                    "generation_time":0,
+                    "generation_time": 0,
 
-                    "total_time":retrieval_time,
+                    "total_time":
+                    retrieval_time,
 
-                }
+                },
 
             }
 
+        # ---------------------------------------------
+        # Context
+        # ---------------------------------------------
+
         context = "\n\n".join(
 
-            doc.page_content
+            document.page_content
 
-            for doc in documents
+            for document in documents
 
         )
 
-        retrieved_chunks = []
+        # ---------------------------------------------
+        # Sources
+        # ---------------------------------------------
 
         sources = []
 
+        retrieved_chunks = []
+
         seen = set()
 
-        for doc in documents:
+        for document in documents:
 
-            source = doc.metadata.get(
+            source = document.metadata.get(
                 "source",
-                "Unknown"
+                "Unknown",
             )
 
-            chunk = doc.metadata.get(
+            chunk = document.metadata.get(
                 "chunk_id",
-                "-"
+                "-",
             )
 
             retrieved_chunks.append(
                 {
-                    "document":source,
-                    "chunk":chunk,
-                    "preview":doc.page_content[:250]
+                    "document": source,
+                    "chunk": chunk,
+                    "preview":
+                    document.page_content[:250],
                 }
             )
 
@@ -115,34 +143,32 @@ class QueryService:
 
                 sources.append(
                     {
-                        "document":source,
-                        "chunk":chunk,
+                        "document": source,
+                        "chunk": chunk,
                     }
                 )
 
-        prompt = f"""
-You are NovaCore Knowledge AI.
+        # ---------------------------------------------
+        # Prompt
+        # ---------------------------------------------
 
-Answer ONLY using the provided context.
+        prompt = PromptBuilder.build(
 
-Never invent information.
+            question=question,
 
-Context
--------
-{context}
+            retrieved_context=context,
 
-Question
---------
-{question}
+            conversation_context=conversation_context,
 
-Answer:
-"""
-
-        generation_start = (
-            time.perf_counter()
         )
 
-        response = self.llm.invoke(
+        # ---------------------------------------------
+        # Generation
+        # ---------------------------------------------
+
+        generation_start = time.perf_counter()
+
+        answer = self.llm.generate(
             prompt
         )
 
@@ -151,21 +177,22 @@ Answer:
             - generation_start
         )
 
+        # ---------------------------------------------
+        # Response
+        # ---------------------------------------------
+
         return {
 
-            "answer":
-            response.content.strip(),
+            "answer": answer,
 
-            "sources":
-            sources,
+            "sources": sources,
 
             "retrieved_chunks":
             retrieved_chunks,
 
-            "context":
-            context,
+            "context": context,
 
-            "metrics":{
+            "metrics": {
 
                 "documents":
                 len(documents),
@@ -177,9 +204,9 @@ Answer:
                 generation_time,
 
                 "total_time":
-                retrieval_time +
-                generation_time,
+                retrieval_time
+                + generation_time,
 
-            }
+            },
 
         }

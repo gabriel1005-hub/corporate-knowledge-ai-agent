@@ -17,7 +17,8 @@ class ChromaStore:
     def __init__(self):
 
         self.embeddings = OllamaEmbeddings(
-            model=settings.EMBEDDING_MODEL
+            model=settings.EMBEDDING_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
         )
 
         self.vectorstore = Chroma(
@@ -47,7 +48,7 @@ class ChromaStore:
     ):
 
         return self.vectorstore.similarity_search(
-            query,
+            query=query,
             k=k,
         )
 
@@ -59,9 +60,6 @@ class ChromaStore:
         self,
         document_name: str,
     ) -> bool:
-        """
-        Delete every embedding belonging to a document.
-        """
 
         try:
 
@@ -80,7 +78,7 @@ class ChromaStore:
             return False
 
     # -------------------------------------------------
-    # COLLECTION INFO
+    # COLLECTION
     # -------------------------------------------------
 
     @property
